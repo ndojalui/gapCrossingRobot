@@ -252,7 +252,7 @@ int stage = 0; // integer that iterates through what stage the robot is in
 bool finish;
 bool start;
 
-const int sensorDistance = 13; // sensor distance in cm
+const int sensorDistance = 7.5; // max sensor distance in cm
 
 // time trackers used for stage 1
 unsigned long previousMillisStepper;
@@ -262,19 +262,19 @@ const long stepperRunTime = 16000; // how long the steppers run for in milliseco
 // time trackers used for stage 4
 unsigned long previousMillisMotors;
 unsigned long currentMillisMotors;
-const long motorRunTime = 10000; // how long the steppers run for in milliseconds
+const long motorRunTime = 3000; // how long the motors run for in milliseconds
 
 // time trackers used for stage 2
 unsigned long previousMillisServos;
 unsigned long currentMillisServos;
-const long servosRunTime = 9000; // how long the steppers run for in milliseconds
+const long servosRunTime = 6000; // how long the servos run for in milliseconds
 
 int mode = 0;
 
 Drive motor1(in1, in2);
 Drive motor2(in3, in4);
 StepperMotor step1(direction, step);
-Distance dist1(4, 5, 10, 2);
+Distance dist1(4, 5, 10, 2); // defining the distance sensor, first 2 params are the pins
 
 void setup()
 {
@@ -292,7 +292,7 @@ void setup()
 
   neoPixel.begin();
 
-  finish = false; // SET THIS TO TRUE TO USE BUTTON
+  finish = false; 
   start = false;
 }
 
@@ -304,7 +304,7 @@ void loop()
 
   switch (mode)
   {
-  case 0:
+  case 0: // main stage, runs the sequence of actions once button is pressed
     changeColor(mode);
     if (digitalRead(stepButton) == LOW)
     {
@@ -319,8 +319,8 @@ void loop()
         if (dist1.Update() <= sensorDistance)
         {
           Serial.println(dist1.Update());
-          motor1.forward(75); // value in here dictates speed, values can range from 0 - 100
-          motor2.forward(75);
+          motor1.forward(100); // value in here dictates speed, values can range from 0 - 100
+          motor2.forward(100);
           // Serial.println("CASE 0 FORWARD");
         }
         else
@@ -382,7 +382,7 @@ void loop()
         break;
       case 4:
         currentMillisMotors = millis();
-        if (currentMillisMotors - previousMillisMotors < motorRunTime)
+        if (currentMillisMotors - previousMillisMotors < 5000)
         { // drives forward for the desired motorRunTime in ms
           motor1.forward(100);
           motor2.forward(100);
@@ -392,7 +392,10 @@ void loop()
           motor1.standby();
           motor2.standby();
           stage += 1;
+          previousMillisStepper = millis();
         }
+        
+
         break;
 
       case 5:
@@ -404,15 +407,15 @@ void loop()
         }
         else
         {
-          
+          stage += 1;
           previousMillisMotors = millis();
         }
-        stage += 1;
+        
         break;
 
       case 6:
         // drive forward untill sensor detects edge of table
-        if (dist1.Update() <= sensorDistance && dist1.Update() != 0 || dist1.Update() > 1500)
+        if (dist1.Update() <= 9 && dist1.Update() != 0 || dist1.Update() > 1500)
         {
           motor1.forward(75); // value in here dictates speed, values can range from 0 - 100
           motor2.forward(75);
@@ -451,7 +454,7 @@ void loop()
       Serial.println("DONE");
     }
     break;
-  case 1:
+  case 1: // debug mode 1, runs the steppers in reverse when button is pressed
     changeColor(mode);
     if (digitalRead(stepButton) == LOW)
     {
@@ -459,7 +462,7 @@ void loop()
     }
     break;
 
-  case 2:
+  case 2: // debug mode 2, runs the steppers forward when button is pressed
       changeColor(mode);
     if (digitalRead(stepButton) == LOW)
     {
@@ -467,7 +470,7 @@ void loop()
     }
     break;
 
-  case 3:
+  case 3: // debug mode 3, runs the servos when the button is pressed
     changeColor(mode);
     if (digitalRead(stepButton) == LOW)
     {
